@@ -40,13 +40,13 @@
 {
     [[[viewTester usingLabel:@"Greeting"] usingValue:@"Hello"] longPressWithDuration:2];
     [[viewTester usingLabel:@"Select All"] tap];
-    [viewTester enterTextIntoCurrentFirstResponder:@"Yo"];
+    [[viewTester usingFirstResponder] enterText:@"Yo"];
     [[[viewTester usingLabel:@"Greeting"] usingValue:@"Yo"] waitForView];
 }
 
 - (void)testFailingToEnterTextIntoFirstResponder
 {
-    KIFExpectFailure([[viewTester usingTimeout:1] enterTextIntoCurrentFirstResponder:@"Yo"]);
+    KIFExpectFailure([[[viewTester usingTimeout:1] usingFirstResponder] enterText:@"Yo"]);
 }
 
 - (void)testEnteringTextIntoViewWithAccessibilityLabel
@@ -62,6 +62,21 @@
 {
     [[viewTester usingLabel:@"Greeting"] enterText:@", world" expectedResult:@"Hello, world"];
     [[[viewTester usingLabel:@"Greeting"] usingValue:@"Hello, world"] waitForView];
+}
+
+- (void)testClearingAndEnteringQuotesIntoViewWithAccessibilityLabel
+{
+    [[viewTester usingLabel:@"Greeting"] clearAndEnterText:@"'\"'," expectedResult:@"'\"',"];
+}
+
+- (void)testClearingAndEnteringDashesIntoViewWithAccessibilityLabel
+{
+    [[viewTester usingLabel:@"Greeting"] clearAndEnterText:@"--a" expectedResult:@"--a"];
+}
+
+- (void)testClearingAndEnteringTypoIntoViewWithAccessibilityLabel
+{
+    [[viewTester usingLabel:@"Greeting"] clearAndEnterText:@" jkasd " expectedResult:@" jkasd "];
 }
 
 - (void)testClearingAndEnteringTextIntoViewWithAccessibilityLabel
@@ -100,6 +115,11 @@
 {
     [[viewTester usingLabel:@"Other Text"] enterText:@"hi\bello" expectedResult:@"hello"];
     [[[viewTester usingLabel:@"Greeting"] usingValue:@"Deleted something."] waitForView];
+}
+
+- (void)testThatValidatingTheExpectedTextCanBeSupressed
+{
+    [[[viewTester validateEnteredText:NO] usingLabel:@"Other Text"] clearAndEnterText:@"hi\bello"];
 }
 
 @end

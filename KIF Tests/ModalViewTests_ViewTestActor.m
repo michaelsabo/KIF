@@ -23,8 +23,8 @@
     [[viewTester usingLabel:@"UIAlertView"] tap];
     [[viewTester usingLabel:@"Alert View"] waitForView];
     [[viewTester usingLabel:@"Message"] waitForView];
-    [[viewTester usingLabel:@"Cancel"] waitToBecomeTappable];
-    [[viewTester usingLabel:@"Continue"] waitToBecomeTappable];
+    [[viewTester usingLabel:@"Cancel"] waitForTappableView];
+    [[viewTester usingLabel:@"Continue"] waitForTappableView];
     [[viewTester usingLabel:@"Continue"] tap];
     [[viewTester usingLabel:@"Message"] waitForAbsenceOfView];
 }
@@ -33,9 +33,9 @@
 {
     [[viewTester usingLabel:@"UIActionSheet"] tap];
     [[viewTester usingLabel:@"Action Sheet"] waitForView];
-    [[viewTester usingLabel:@"Destroy"] waitToBecomeTappable];
-    [[viewTester usingLabel:@"A"] waitToBecomeTappable];
-    [[viewTester usingLabel:@"B"] waitToBecomeTappable];
+    [[viewTester usingLabel:@"Destroy"] waitForTappableView];
+    [[viewTester usingLabel:@"A"] waitForTappableView];
+    [[viewTester usingLabel:@"B"] waitForTappableView];
 
     [self _dismissModal];
     
@@ -46,18 +46,30 @@
 
 - (void)testInteractionWithAnActivityViewController
 {
+    NSOperatingSystemVersion iOS11 = {11, 0, 0};
+    if ([NSProcessInfo instancesRespondToSelector:@selector(isOperatingSystemAtLeastVersion:)]
+        && [[NSProcessInfo new] isOperatingSystemAtLeastVersion:iOS11]) {
+        NSLog(@"This test can't be run on iOS 11, as the activity sheet is hosted in an `AXRemoteElement`");
+        return;
+    }
+    
     if (!NSClassFromString(@"UIActivityViewController")) {
         return;
     }
 
     [[viewTester usingLabel:@"UIActivityViewController"] tap];
-    [[viewTester usingLabel:@"Copy"] waitToBecomeTappable];
-    [[viewTester usingLabel:@"Mail"] waitToBecomeTappable];
+    [[viewTester usingLabel:@"Copy"] waitForTappableView];
+
+    if ([UIDevice.currentDevice.systemVersion compare:@"10.0" options:NSNumericSearch] < 0) {
+        [[viewTester usingLabel:@"Mail"] waitForTappableView];
+    } else {
+        [[viewTester usingLabel:@"Add To iCloud Drive"] waitForTappableView];
+    }
 
     // On iOS7, the activity controller appears at the bottom
     // On iOS8 and beyond, it is shown in a popover control
     if ([UIDevice.currentDevice.systemVersion compare:@"8.0" options:NSNumericSearch] < 0) {
-        [tester tapViewWithAccessibilityLabel:@"Cancel"];
+        [[viewTester usingLabel:@"Cancel"] tap];
     } else {
         [self _dismissModal];
     }
@@ -68,9 +80,9 @@
 - (void)_dismissModal;
 {
     if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad) {
-        [tester dismissPopover];
+        [viewTester dismissPopover];
     } else {
-        [tester tapViewWithAccessibilityLabel:@"Cancel"];
+        [[viewTester usingLabel:@"Cancel"] tap];
     }
 }
 

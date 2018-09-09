@@ -76,11 +76,28 @@
 
 - (void)testTappingRowUnderToolbarByLabel
 {
+    // Ensure the toolbar is visible
+    [[viewTester usingIdentifier:@"Toolbar"] waitForView];
+
     // Tap row 31, which will scroll so that cell 32 is precisely positioned under the toolbar
     [[viewTester usingLabel:@"Cell 31"] tap];
 
     // Tap row 32, which should be scrolled up above the toolbar and then tapped
     [[viewTester usingLabel:@"Cell 32"] tap];
+}
+
+- (void)testWaitingRowByLabel
+{
+    UIView *v = [[viewTester usingLabel:@"First Cell"] waitForView];
+    XCTAssertTrue([v isKindOfClass:[UITableViewCell class]] || [v isKindOfClass:NSClassFromString(@"UITableViewLabel")], @"actual: %@", [v class]);
+}
+
+- (void)testWaitingRowByLabelAfterTapping
+{
+    // for view lookup changes caused by tapping rows
+    [[viewTester usingLabel:@"First Cell"] tap];
+    UIView *v = [[viewTester usingLabel:@"First Cell"] waitForView];
+    XCTAssertTrue([v isKindOfClass:[UITableViewCell class]] || [v isKindOfClass:NSClassFromString(@"UITableViewLabel")], @"actual: %@", [v class]);
 }
 
 - (void)testMoveRowDown
